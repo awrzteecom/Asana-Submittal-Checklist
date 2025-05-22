@@ -10,9 +10,9 @@ from typing import Dict, List, Any, Optional, Tuple
 import docx
 from docx import Document
 
-from src.utils.logger import get_logger
-from src.utils.config import get_config
-from src.utils.validator import validate_file_path
+from .utils.logger import get_logger
+from .utils.config import get_config
+from .utils.validator import validate_file_path
 
 # Initialize logger and config
 logger = get_logger(__name__)

@@ -62,7 +62,7 @@ The installer will:
 
 1. Launch the application using the desktop shortcut or by running:
    ```
-   python src/docx_to_asana.py --gui
+   python -m src.docx_to_asana --gui
    ```
 2. Select the input folder containing DOCX files
 3. Select the output folder for CSV files
@@ -72,22 +72,22 @@ The installer will:
 
 Process a single file:
 ```
-python src/docx_to_asana.py --input path/to/document.docx --output path/to/output/folder
+python -m src.docx_to_asana --input path/to/document.docx --output path/to/output/folder
 ```
 
 Process all files in a directory:
 ```
-python src/docx_to_asana.py --input path/to/documents/folder --output path/to/output/folder
+python -m src.docx_to_asana --input path/to/documents/folder --output path/to/output/folder
 ```
 
 Launch the GUI:
 ```
-python src/docx_to_asana.py --gui
+python -m src.docx_to_asana --gui
 ```
 
 Use a custom configuration file:
 ```
-python src/docx_to_asana.py --config path/to/config.json --input path/to/document.docx --output path/to/output/folder
+python -m src.docx_to_asana --config path/to/config.json --input path/to/document.docx --output path/to/output/folder
 ```
 
 ## Document Structure Requirements

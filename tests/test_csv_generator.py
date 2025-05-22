@@ -11,6 +11,12 @@ import pytest
 import pandas as pd
 from typing import Dict, List, Any
 
+import sys
+import os
+
+# Add the parent directory to the Python path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.csv_generator import CSVGenerator, generate_csv
 from src.utils.config import get_config
 

@@ -167,7 +167,7 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo Installation completed successfully!
 echo You can run the application using the desktop shortcut or by running:
-echo python "%INSTALL_DIR%\src\docx_to_asana.py" --gui
+echo python -m src.docx_to_asana --gui
 echo.
 
 :exit

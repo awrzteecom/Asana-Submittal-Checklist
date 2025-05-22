@@ -10,12 +10,37 @@ import sys
 import argparse
 from typing import List, Dict, Any, Optional, Tuple
 
-from src.document_parser import parse_document
-from src.csv_generator import generate_csv
-from src.gui_handler import run_gui
-from src.utils.logger import get_logger
-from src.utils.config import get_config
-from src.utils.validator import validate_file_path, validate_directory_path
+# Handle imports differently when running as script vs module
+if __name__ == "__main__":
+    # Add the parent directory to the Python path when running from within src/
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if parent_dir not in sys.path:
+        sys.path.insert(0, parent_dir)
+    
+    # Use absolute imports when running as script
+    try:
+        from src.document_parser import parse_document
+        from src.csv_generator import generate_csv
+        from src.gui_handler import run_gui
+        from src.utils.logger import get_logger
+        from src.utils.config import get_config
+        from src.utils.validator import validate_file_path, validate_directory_path
+    except ImportError:
+        # Fallback to direct imports if src module not found
+        from document_parser import parse_document
+        from csv_generator import generate_csv
+        from gui_handler import run_gui
+        from utils.logger import get_logger
+        from utils.config import get_config
+        from utils.validator import validate_file_path, validate_directory_path
+else:
+    # Use relative imports when imported as module
+    from .document_parser import parse_document
+    from .csv_generator import generate_csv
+    from .gui_handler import run_gui
+    from .utils.logger import get_logger
+    from .utils.config import get_config
+    from .utils.validator import validate_file_path, validate_directory_path
 
 # Initialize logger and config
 logger = get_logger(__name__)

@@ -205,9 +205,22 @@ pytest>=6.2.5
         }
     }
     
+    # Create __init__.py files for Python package structure
+    $initFiles = @(
+        "$InstallDir\src\__init__.py",
+        "$InstallDir\src\utils\__init__.py"
+    )
+    
+    foreach ($initFile in $initFiles) {
+        if (-not (Test-Path $initFile)) {
+            Set-Content -Path $initFile -Value "# This file marks the directory as a Python package"
+            Write-Host "Created: $initFile" -ForegroundColor Gray
+        }
+    }
+    
     Write-Host "Installation completed successfully!" -ForegroundColor Green
     Write-Host "You can run the application using the desktop shortcut or by running:" -ForegroundColor Cyan
-    Write-Host "python $InstallDir\src\docx_to_asana.py --gui" -ForegroundColor Cyan
+    Write-Host "python -m src.docx_to_asana --gui" -ForegroundColor Cyan
     
     return $true
 }

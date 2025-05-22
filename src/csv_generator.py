@@ -10,9 +10,9 @@ import csv
 import pandas as pd
 from typing import Dict, List, Any, Optional
 
-from src.utils.logger import get_logger
-from src.utils.config import get_config
-from src.utils.validator import validate_csv_data, sanitize_string
+from .utils.logger import get_logger
+from .utils.config import get_config
+from .utils.validator import validate_csv_data, sanitize_string
 
 # Initialize logger and config
 logger = get_logger(__name__)
