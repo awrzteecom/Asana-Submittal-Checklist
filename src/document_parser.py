@@ -41,6 +41,24 @@ class DocumentParser:
         self.products_heading = config.get("document.products_heading", "Products")
         self.manufacturer_headings = config.get("document.manufacturer_headings", 
                                                ["Manufacturer", "Manufacturers"])
+        
+        # Load variations for flexible matching from config
+        self.heading_style_variations = config.get("document.heading_style_variations", {
+            "section": ["heading 1", "title 1", "h1", "header 1", "section"],
+            "product_type": ["heading 2", "title 2", "h2", "header 2", "subsection"],
+            "manufacturer": ["heading 3", "title 3", "h3", "header 3"],
+            "description": ["heading 4", "title 4", "h4", "header 4"]
+        })
+        
+        self.products_heading_variations = config.get("document.products_heading_variations", [
+            "products", "product list", "products and services", 
+            "product information", "product specs", "product specifications"
+        ])
+        
+        # Convert manufacturer headings to lowercase for case-insensitive matching
+        self.manufacturer_heading_variations = [
+            heading.lower() for heading in self.manufacturer_headings
+        ]
     
     def parse_document(self, file_path: str) -> Dict[str, Any]:
         """
@@ -110,6 +128,55 @@ class DocumentParser:
         except Exception as e:
             logger.error(f"Error accepting tracked changes: {e}")
     
+    def _is_style_match(self, style_name: str, style_type: str) -> bool:
+        """
+        Check if a style name matches a style type using flexible matching.
+        
+        Args:
+            style_name: The style name to check
+            style_type: The style type to match against ("section", "product_type", etc.)
+            
+        Returns:
+            True if the style name matches the style type, False otherwise
+        """
+        if not style_name:
+            return False
+            
+        # Check for exact match with configured style
+        if style_name.lower() == self.heading_styles[style_type].lower():
+            return True
+            
+        # Check for variations
+        style_name_lower = style_name.lower()
+        for variation in self.heading_style_variations[style_type]:
+            if variation in style_name_lower:
+                return True
+                
+        return False
+    
+    def _is_text_match(self, text: str, variations: List[str]) -> bool:
+        """
+        Check if text matches any of the provided variations using flexible matching.
+        
+        Args:
+            text: The text to check
+            variations: List of text variations to match against
+            
+        Returns:
+            True if the text matches any variation, False otherwise
+        """
+        if not text:
+            return False
+            
+        text_lower = text.strip().lower()
+        
+        # Check for substring matches
+        for variation in variations:
+            if variation in text_lower:
+                return True
+                
+        return False
+    
     def _find_products_section(self, doc: Document) -> Optional[Dict[str, Any]]:
         """
         Find the Products section in the document.
@@ -126,8 +193,10 @@ class DocumentParser:
         
         # Iterate through paragraphs to find the 2nd Heading 1 with "Products" text
         for i, para in enumerate(doc.paragraphs):
-            if para.style.name == self.heading_styles["section"]:
-                if para.text.strip() == self.products_heading:
+            # Use flexible style matching
+            if self._is_style_match(para.style.name, "section"):
+                # Use flexible text matching
+                if self._is_text_match(para.text, self.products_heading_variations):
                     heading1_count += 1
                     if heading1_count == 2:  # We want the 2nd instance
                         products_section = {
@@ -170,7 +239,7 @@ class DocumentParser:
                 break
             
             # Process Heading 2 (Product Type)
-            if para.style.name == self.heading_styles["product_type"]:
+            if self._is_style_match(para.style.name, "product_type"):
                 # Create a new product type entry
                 current_product_type = {
                     "name": para.text.strip(),
@@ -181,16 +250,10 @@ class DocumentParser:
                 logger.debug(f"Found product type: {para.text}")
             
             # Process Heading 3 (Manufacturer)
-            elif (para.style.name == self.heading_styles["manufacturer"] and 
+            elif (self._is_style_match(para.style.name, "manufacturer") and 
                   current_product_type is not None):
-                # Check if this is a manufacturer heading
-                is_manufacturer = False
-                for heading in self.manufacturer_headings:
-                    if heading.lower() in para.text.lower():
-                        is_manufacturer = True
-                        break
-                
-                if is_manufacturer:
+                # Check if this is a manufacturer heading using flexible matching
+                if self._is_text_match(para.text, self.manufacturer_heading_variations):
                     # Create a new manufacturer entry
                     current_manufacturer = {
                         "name": para.text.strip(),
@@ -200,7 +263,7 @@ class DocumentParser:
                     logger.debug(f"Found manufacturer: {para.text}")
             
             # Process Heading 4 (Description)
-            elif (para.style.name == self.heading_styles["description"] and 
+            elif (self._is_style_match(para.style.name, "description") and 
                   current_manufacturer is not None):
                 # Add description to current manufacturer
                 current_manufacturer["descriptions"].append(para.text.strip())
@@ -236,8 +299,15 @@ class DocumentParser:
             
             # Analyze paragraphs
             for para in doc.paragraphs:
-                if para.style.name in heading_counts:
-                    heading_counts[para.style.name] += 1
+                # Use flexible style matching for counting
+                if self._is_style_match(para.style.name, "section"):
+                    heading_counts["Heading 1"] += 1
+                elif self._is_style_match(para.style.name, "product_type"):
+                    heading_counts["Heading 2"] += 1
+                elif self._is_style_match(para.style.name, "manufacturer"):
+                    heading_counts["Heading 3"] += 1
+                elif self._is_style_match(para.style.name, "description"):
+                    heading_counts["Heading 4"] += 1
             
             return {
                 "filename": os.path.basename(file_path),

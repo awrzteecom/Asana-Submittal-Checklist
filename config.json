@@ -9,13 +9,23 @@
     },
     "document": {
         "products_heading": "Products",
-        "manufacturer_headings": ["Manufacturer", "Manufacturers"],
+        "manufacturer_headings": ["Manufacturer", "Manufacturers", "Mfg", "Manufacturing", "Supplier", "Suppliers", "Vendor", "Vendors"],
         "heading_styles": {
             "section": "Heading 1",
             "product_type": "Heading 2",
             "manufacturer": "Heading 3",
             "description": "Heading 4"
-        }
+        },
+        "heading_style_variations": {
+            "section": ["heading 1", "title 1", "h1", "header 1", "section"],
+            "product_type": ["heading 2", "title 2", "h2", "header 2", "subsection"],
+            "manufacturer": ["heading 3", "title 3", "h3", "header 3"],
+            "description": ["heading 4", "title 4", "h4", "header 4"]
+        },
+        "products_heading_variations": [
+            "products", "product list", "products and services", 
+            "product information", "product specs", "product specifications"
+        ]
     },
     "output": {
         "csv_encoding": "utf-8",

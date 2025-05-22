@@ -92,13 +92,24 @@ python src/docx_to_asana.py --config path/to/config.json --input path/to/documen
 
 ## Document Structure Requirements
 
-The application expects DOCX files with the following structure:
+The application processes DOCX files with the following structure:
 
 1. **Root Task**: Each DOCX filename becomes a root task
-2. **Products Section**: The application looks for the 2nd instance of "Heading 1" style with text "Products"
+2. **Products Section**: The application looks for the 2nd instance of "Heading 1" style with text containing "Products"
 3. **Product Types**: All "Heading 2" elements under the Products section become sub-tasks
-4. **Manufacturers**: "Heading 3" elements with "Manufacturer" or "Manufacturers" text
+4. **Manufacturers**: "Heading 3" elements with text containing manufacturer-related terms
 5. **Descriptions**: All "Heading 4" content under manufacturer sections is combined
+
+### Flexible Heading Detection
+
+The application implements flexible heading detection to handle inconsistent document formatting:
+
+- **Style Matching**: Recognizes various heading style names (e.g., "Heading 1", "Title 1", "H1")
+- **Text Matching**: Uses case-insensitive, partial matching for section names
+- **Products Section Variations**: Detects variations like "Products", "Product List", "Products and Services"
+- **Manufacturer Variations**: Recognizes terms like "Manufacturer", "Mfg", "Supplier", "Vendor"
+
+This flexibility ensures the application works with documents created by different authors with varying formatting styles.
 
 ## Asana CSV Format
 
@@ -128,13 +139,23 @@ The application can be configured by editing the `config.json` file:
     },
     "document": {
         "products_heading": "Products",
-        "manufacturer_headings": ["Manufacturer", "Manufacturers"],
+        "manufacturer_headings": ["Manufacturer", "Manufacturers", "Mfg", "Manufacturing", "Supplier", "Vendors"],
         "heading_styles": {
             "section": "Heading 1",
             "product_type": "Heading 2",
             "manufacturer": "Heading 3",
             "description": "Heading 4"
-        }
+        },
+        "heading_style_variations": {
+            "section": ["heading 1", "title 1", "h1", "header 1", "section"],
+            "product_type": ["heading 2", "title 2", "h2", "header 2", "subsection"],
+            "manufacturer": ["heading 3", "title 3", "h3", "header 3"],
+            "description": ["heading 4", "title 4", "h4", "header 4"]
+        },
+        "products_heading_variations": [
+            "products", "product list", "products and services", 
+            "product information", "product specs", "product specifications"
+        ]
     },
     "output": {
         "csv_encoding": "utf-8",

@@ -89,6 +89,72 @@ def test_find_products_section():
     assert products_section["text"] == "Products"
     assert products_section["index"] == 6  # 0-based index of the second Products heading
 
+def test_find_products_section_with_variations():
+    """Test finding the Products section with different text variations."""
+    # Create a test document with two Products sections using different text
+    content_structure = [
+        ("Introduction", "Heading 1"),
+        ("This is an introduction", "Normal"),
+        ("Product List", "Heading 1"),  # First Products section with variation
+        ("First product", "Heading 2"),
+        ("Details", "Normal"),
+        ("Another Section", "Heading 1"),
+        ("Products and Services", "Heading 1"),  # Second Products section with variation
+        ("Product Type 1", "Heading 2"),
+        ("Manufacturer: Company A", "Heading 3"),
+        ("Description 1", "Heading 4"),
+    ]
+    
+    file_path = create_test_document("test_products_variations.docx", content_structure)
+    
+    # Parse the document
+    parser = DocumentParser()
+    doc = Document(file_path)
+    products_section = parser._find_products_section(doc)
+    
+    # Check that the second Products section was found
+    assert products_section is not None
+    assert products_section["text"] == "Products and Services"
+    assert products_section["index"] == 6  # 0-based index of the second Products heading
+
+def test_style_matching():
+    """Test flexible style matching."""
+    parser = DocumentParser()
+    
+    # Test section style matching
+    assert parser._is_style_match("Heading 1", "section") is True
+    assert parser._is_style_match("heading 1", "section") is True
+    assert parser._is_style_match("Title 1", "section") is True
+    assert parser._is_style_match("H1", "section") is True
+    assert parser._is_style_match("Custom Section Style", "section") is True
+    assert parser._is_style_match("Normal", "section") is False
+    
+    # Test product_type style matching
+    assert parser._is_style_match("Heading 2", "product_type") is True
+    assert parser._is_style_match("heading 2", "product_type") is True
+    assert parser._is_style_match("Title 2", "product_type") is True
+    assert parser._is_style_match("H2", "product_type") is True
+    assert parser._is_style_match("Custom Subsection Style", "product_type") is True
+    assert parser._is_style_match("Normal", "product_type") is False
+
+def test_text_matching():
+    """Test flexible text matching."""
+    parser = DocumentParser()
+    
+    # Test products heading matching
+    assert parser._is_text_match("Products", parser.products_heading_variations) is True
+    assert parser._is_text_match("Product List", parser.products_heading_variations) is True
+    assert parser._is_text_match("Products and Services", parser.products_heading_variations) is True
+    assert parser._is_text_match("Product Information", parser.products_heading_variations) is True
+    assert parser._is_text_match("Random Text", parser.products_heading_variations) is False
+    
+    # Test manufacturer heading matching
+    assert parser._is_text_match("Manufacturer: ABC Corp", parser.manufacturer_heading_variations) is True
+    assert parser._is_text_match("Manufacturers: XYZ Inc.", parser.manufacturer_heading_variations) is True
+    assert parser._is_text_match("Mfg: Company A", parser.manufacturer_heading_variations) is True
+    assert parser._is_text_match("Supplier Information", parser.manufacturer_heading_variations) is True
+    assert parser._is_text_match("Random Text", parser.manufacturer_heading_variations) is False
+
 
 def test_extract_product_types():
     """Test extracting product types from a document."""
@@ -127,6 +193,46 @@ def test_extract_product_types():
     assert product_types[1]["name"] == "Product Type 2"
     assert len(product_types[1]["manufacturers"]) == 1
     assert product_types[1]["manufacturers"][0]["name"] == "Manufacturers: Company B, Company C"
+    assert len(product_types[1]["manufacturers"][0]["descriptions"]) == 1
+
+def test_extract_product_types_with_style_variations():
+    """Test extracting product types with different style variations."""
+    # Create a test document with product types and manufacturers using different styles
+    content_structure = [
+        ("Introduction", "Heading 1"),
+        ("Products", "Heading 1"),
+        ("Product Type 1", "Title 2"),  # Using Title 2 instead of Heading 2
+        ("Supplier: Company A", "H3"),  # Using H3 instead of Heading 3
+        ("Description 1", "Title 4"),   # Using Title 4 instead of Heading 4
+        ("Description 2", "Title 4"),
+        ("Product Type 2", "Title 2"),
+        ("Vendor: Company B", "H3"),
+        ("Description 3", "Title 4"),
+        ("Another Section", "Heading 1"),
+    ]
+    
+    # Add custom styles to the test document
+    file_path = create_test_document("test_style_variations.docx", content_structure)
+    
+    # Parse the document
+    parser = DocumentParser()
+    doc = Document(file_path)
+    products_section = {"index": 1, "text": "Products"}
+    product_types = parser._extract_product_types(doc, products_section)
+    
+    # Check that product types were extracted correctly despite style variations
+    assert len(product_types) == 2
+    
+    # Check first product type
+    assert product_types[0]["name"] == "Product Type 1"
+    assert len(product_types[0]["manufacturers"]) == 1
+    assert product_types[0]["manufacturers"][0]["name"] == "Supplier: Company A"
+    assert len(product_types[0]["manufacturers"][0]["descriptions"]) == 2
+    
+    # Check second product type
+    assert product_types[1]["name"] == "Product Type 2"
+    assert len(product_types[1]["manufacturers"]) == 1
+    assert product_types[1]["manufacturers"][0]["name"] == "Vendor: Company B"
     assert len(product_types[1]["manufacturers"][0]["descriptions"]) == 1
 
 
