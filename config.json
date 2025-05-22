@@ -1,0 +1,38 @@
+{
+    "application": {
+        "name": "DOCX to Asana CSV Generator",
+        "version": "1.0.0"
+    },
+    "asana": {
+        "default_section": "CA Submittal Check-list",
+        "default_project": ""
+    },
+    "document": {
+        "products_heading": "Products",
+        "manufacturer_headings": ["Manufacturer", "Manufacturers"],
+        "heading_styles": {
+            "section": "Heading 1",
+            "product_type": "Heading 2",
+            "manufacturer": "Heading 3",
+            "description": "Heading 4"
+        }
+    },
+    "output": {
+        "csv_encoding": "utf-8",
+        "csv_columns": [
+            "Task Name",
+            "Section/Column",
+            "Assignee",
+            "Due Date",
+            "Priority",
+            "Notes",
+            "Parent Task",
+            "Project"
+        ]
+    },
+    "logging": {
+        "level": "INFO",
+        "file_path": "app.log",
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    }
+}
